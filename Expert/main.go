@@ -55,9 +55,11 @@ func (g *Game) Update() error {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		g.Player.updateY(playerSpeed)
+		g.Player.Velocity = 1.0
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
 		g.Player.updateY(-playerSpeed)
+		g.Player.Velocity = -1.0
 	}
 	// Shoot (spacebar)
 	if ebiten.IsKeyPressed(ebiten.KeySpace) && g.Player.Cooldown == 0 {
@@ -86,9 +88,14 @@ func (g *Game) Update() error {
 				enemy.Velocity = -1.0
 			}
 			enemy.updateY(enemy.Velocity * enemy.Speed)
-		} else if g.Wave == 3 {
-			if enemy.Health == 15 {
+		} else if g.Wave == 3 || g.Wave == 7 {
+			if enemy.Velocity == 0 {
 				enemy.updateX(-enemy.Speed)
+			} else if enemy.Speed == 1 {
+				if enemy.PlayerY != g.Player.PlayerY {
+					enemy.Velocity = g.Player.Velocity
+					enemy.updateY(enemy.Velocity * enemy.Speed)
+				}
 			} else {
 				if enemy.PlayerY <= 10 {
 					enemy.Velocity = 1.0
@@ -115,6 +122,14 @@ func (g *Game) Update() error {
 			}
 			enemy.updateY(enemy.Velocity * enemy.Speed)
 			enemy.updateX(xVelocity * enemy.Speed)
+		} else if g.Wave == 8 {
+			if enemy.PlayerY < g.Player.PlayerY {
+				enemy.Velocity = 1.0
+				enemy.updateY(enemy.Velocity * enemy.Speed)
+			} else if enemy.PlayerY > g.Player.PlayerY {
+				enemy.Velocity = -1.0
+				enemy.updateY(enemy.Velocity * enemy.Speed)
+			}
 		}
 
 		//shoot projectile
@@ -126,7 +141,7 @@ func (g *Game) Update() error {
 				VY: 0,
 			})
 			enemy.Cooldown = rand.Intn(300) + 100
-		} else if enemy.Cooldown == 0 {
+		} else if enemy.Cooldown == 0 && g.Wave < 8 {
 			g.Projectiles = append(g.Projectiles, Projectile{
 				X:  enemy.PlayerX - 8, // center of player
 				Y:  enemy.PlayerY + 8,
@@ -134,6 +149,14 @@ func (g *Game) Update() error {
 				VY: 0,
 			})
 			enemy.Cooldown = rand.Intn(250) + 250
+		} else if enemy.Cooldown == 0 {
+			g.Projectiles = append(g.Projectiles, Projectile{
+				X:  enemy.PlayerX - 8, // center of player
+				Y:  enemy.PlayerY + 8,
+				VX: -1, // pixels per frame
+				VY: 0,
+			})
+			enemy.Cooldown = rand.Intn(50) + 10
 		} else {
 			enemy.Cooldown--
 		}
@@ -155,8 +178,12 @@ func (g *Game) Update() error {
 
 	// Update projectiles
 	for i, p := range g.Projectiles {
-		if isColliding(p.X, p.Y, 3, 3, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && p.VX < 0 {
+		if isColliding(p.X, p.Y, 3, 3, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && p.VX < 0 && g.Wave < 4 {
 			g.Player.Health -= 5
+			g.Player.Hurt = true
+			g.Projectiles[i] = Projectile{}
+		} else if isColliding(p.X, p.Y, 4, 4, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && p.VX < 0 && g.Wave >= 4 {
+			g.Player.Health -= 10
 			g.Player.Hurt = true
 			g.Projectiles[i] = Projectile{}
 		} else {
@@ -204,8 +231,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	//draw enemies
-	if g.Wave == 4 {
+	if g.Wave == 4 || g.Wave == 8 {
 		vector.DrawFilledRect(screen, g.Enemies[0].PlayerX, g.Enemies[0].PlayerY, 16, 16, color.RGBA{0, 0, 255, 255}, false)
+		vector.DrawFilledRect(screen, 10, screenHeight-10, float32(g.Enemies[0].Health), 3, color.RGBA{255, 0, 0, 255}, false)
 	} else {
 		for _, e := range g.Enemies {
 			if e.Hurt {
@@ -250,10 +278,11 @@ func main() {
 			Hurt:     false,
 			PlayerX:  screenWidth / 2,
 			PlayerY:  screenHeight / 2,
+			Velocity: 1.0,
 			Cooldown: 15,
 		},
 		Enemies:  []Player{},
-		Wave:     1,
+		Wave:     8,
 		NextWave: false,
 		Lose:     false,
 	}
@@ -355,6 +384,47 @@ func wave(g *Game) {
 			}
 			g.Enemies = append(g.Enemies, newEnemy)
 		}
+	case 7:
+		for i := range 10 {
+			newEnemy := Player{
+				Health:   20,
+				PlayerX:  screenWidth - 10,
+				PlayerY:  float32(20 + i*((screenHeight-40)/9)),
+				Speed:    (r1.Float32() / 3),
+				Cooldown: rand.Intn(250) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+		}
+		for i := range 20 {
+			newEnemy := Player{
+				Health:   20,
+				PlayerX:  screenWidth - (r1.Float32() * 100),
+				PlayerY:  float32(screenHeight - (i * r1.Intn(10))),
+				Speed:    (r1.Float32() / 2),
+				Velocity: float32(1 - 2*(rand.Intn(2))),
+				Cooldown: rand.Intn(300) + 100,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+		}
+		newEnemy := Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight / 2,
+			Speed:    1,
+			Velocity: g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+	case 8:
+		newEnemy := Player{
+			Health:   200,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight / 2,
+			Speed:    .75,
+			Velocity: g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
 	}
 	g.NextWave = false
 }
