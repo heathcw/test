@@ -78,7 +78,7 @@ func (g *Game) Update() error {
 		//calculate movement
 		if g.Wave == 1 || g.Wave == 5 {
 			enemy.updateX(-enemy.Speed)
-		} else if g.Wave == 2 {
+		} else if g.Wave == 2 || g.Wave == 6 {
 			if enemy.PlayerY <= 10 {
 				enemy.Velocity = 1.0
 			}
@@ -223,7 +223,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	text.Draw(screen, message, basicfont.Face7x13, screenWidth-100, screenHeight-10, color.White)
 	if g.Lose {
 		message = "GAME OVER"
-		text.Draw(screen, message, basicfont.Face7x13, screenWidth/2, screenHeight/2, color.White)
+		text.Draw(screen, message, basicfont.Face7x13, screenWidth/2-25, screenHeight/2, color.White)
 		return
 	}
 
@@ -281,7 +281,7 @@ func wave(g *Game) {
 			newEnemy := Player{
 				Health:   10,
 				PlayerX:  screenWidth - 10,
-				PlayerY:  float32(screenHeight-(i*(screenHeight/10))) + 10,
+				PlayerY:  float32(20 + i*((screenHeight-40)/9)),
 				Speed:    (r1.Float32() / 2),
 				Cooldown: rand.Intn(300) + 100,
 			}
@@ -315,7 +315,7 @@ func wave(g *Game) {
 			newEnemy := Player{
 				Health:   15,
 				PlayerX:  screenWidth - 10,
-				PlayerY:  float32(screenHeight-(i*(screenHeight/10))) + 10,
+				PlayerY:  float32(20 + i*((screenHeight-40)/9)),
 				Speed:    (r1.Float32() / 2),
 				Cooldown: rand.Intn(100) + 100,
 			}
@@ -337,9 +337,21 @@ func wave(g *Game) {
 			newEnemy := Player{
 				Health:   20,
 				PlayerX:  screenWidth - 10,
-				PlayerY:  float32(screenHeight-(i*(screenHeight/10))) + 10,
+				PlayerY:  float32(20 + i*((screenHeight-40)/9)),
 				Speed:    (r1.Float32() / 3),
 				Cooldown: rand.Intn(250) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+		}
+	case 6:
+		for i := range 30 {
+			newEnemy := Player{
+				Health:   20,
+				PlayerX:  float32(rand.Intn(screenWidth-100) + 50),
+				PlayerY:  float32(screenHeight - (i * r1.Intn(10))),
+				Speed:    (r1.Float32() / 2),
+				Velocity: float32(1 - 2*(rand.Intn(2))),
+				Cooldown: rand.Intn(300) + 100,
 			}
 			g.Enemies = append(g.Enemies, newEnemy)
 		}
