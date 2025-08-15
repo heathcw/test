@@ -9,6 +9,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text"
+
 	//"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/font/basicfont"
@@ -31,9 +32,15 @@ type Game struct {
 	Wave        int
 	NextWave    bool
 	Score       int
+	Lose        bool
 }
 
 func (g *Game) Update() error {
+	if g.Player.Health <= 0 {
+		g.Lose = true
+		return nil
+	}
+
 	if g.Player.Cooldown > 0 {
 		g.Player.Cooldown--
 	} else {
@@ -69,7 +76,7 @@ func (g *Game) Update() error {
 	for _, enemy := range g.Enemies {
 		enemy.Hurt = false
 		//calculate movement
-		if g.Wave == 1 {
+		if g.Wave == 1 || g.Wave == 5 {
 			enemy.updateX(-enemy.Speed)
 		} else if g.Wave == 2 {
 			if enemy.PlayerY <= 10 {
@@ -92,13 +99,22 @@ func (g *Game) Update() error {
 				enemy.updateY(enemy.Velocity * enemy.Speed)
 			}
 		} else if g.Wave == 4 {
+			var xVelocity float32
 			if enemy.PlayerY <= 100 {
 				enemy.Velocity = 1.0
 			}
 			if enemy.PlayerY >= screenHeight-100 {
 				enemy.Velocity = -1.0
 			}
+			if enemy.PlayerX < 50 {
+				xVelocity = 0
+			} else if enemy.PlayerX <= screenWidth-60 {
+				xVelocity = -.5
+			} else if enemy.PlayerX > screenWidth-60 {
+				xVelocity = -.5
+			}
 			enemy.updateY(enemy.Velocity * enemy.Speed)
+			enemy.updateX(xVelocity * enemy.Speed)
 		}
 
 		//shoot projectile
@@ -109,7 +125,7 @@ func (g *Game) Update() error {
 				VX: -weaponSpeed, // pixels per frame
 				VY: 0,
 			})
-			enemy.Cooldown = rand.Intn(100) + 100
+			enemy.Cooldown = rand.Intn(300) + 100
 		} else if enemy.Cooldown == 0 {
 			g.Projectiles = append(g.Projectiles, Projectile{
 				X:  enemy.PlayerX - 8, // center of player
@@ -117,7 +133,7 @@ func (g *Game) Update() error {
 				VX: -1, // pixels per frame
 				VY: 0,
 			})
-			enemy.Cooldown = rand.Intn(600) + 250
+			enemy.Cooldown = rand.Intn(250) + 250
 		} else {
 			enemy.Cooldown--
 		}
@@ -187,21 +203,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		vector.DrawFilledRect(screen, float32(((i + 1) * 5)), 10, 3, 5, color.RGBA{255, 0, 0, 255}, false)
 	}
 
-	//draw score
-	message := "SCORE: " + strconv.Itoa(g.Score)
-	text.Draw(screen, message, basicfont.Face7x13, screenWidth-100, 10, color.White)
-
-	//draw projectiles
-	for _, p := range g.Projectiles {
-		if p.VX > 0 {
-			vector.DrawFilledCircle(screen, p.X, p.Y, 3, color.RGBA{0, 255, 0, 255}, false) // green bullet
-		} else if p.VX == -1 {
-			vector.DrawFilledCircle(screen, p.X, p.Y, 5, color.RGBA{255, 0, 0, 255}, false) // big enemy blast
-		} else {
-			vector.DrawFilledCircle(screen, p.X, p.Y, 1, color.RGBA{255, 0, 0, 255}, false) // enemy pellet
-		}
-	}
-
 	//draw enemies
 	if g.Wave == 4 {
 		vector.DrawFilledRect(screen, g.Enemies[0].PlayerX, g.Enemies[0].PlayerY, 16, 16, color.RGBA{0, 0, 255, 255}, false)
@@ -212,6 +213,28 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			} else {
 				vector.DrawFilledRect(screen, e.PlayerX, e.PlayerY, 7, 7, color.RGBA{0, 0, 255, 255}, false)
 			}
+		}
+	}
+
+	//draw text
+	message := "SCORE: " + strconv.Itoa(g.Score)
+	text.Draw(screen, message, basicfont.Face7x13, screenWidth-100, 10, color.White)
+	message = "WAVE: " + strconv.Itoa(g.Wave)
+	text.Draw(screen, message, basicfont.Face7x13, screenWidth-100, screenHeight-10, color.White)
+	if g.Lose {
+		message = "GAME OVER"
+		text.Draw(screen, message, basicfont.Face7x13, screenWidth/2, screenHeight/2, color.White)
+		return
+	}
+
+	//draw projectiles
+	for _, p := range g.Projectiles {
+		if p.VX > 0 {
+			vector.DrawFilledCircle(screen, p.X, p.Y, 3, color.RGBA{0, 255, 0, 255}, false) // green bullet
+		} else if p.VX == -1 {
+			vector.DrawFilledCircle(screen, p.X, p.Y, 5, color.RGBA{255, 0, 0, 255}, false) // big enemy blast
+		} else {
+			vector.DrawFilledCircle(screen, p.X, p.Y, 1, color.RGBA{255, 0, 0, 255}, false) // enemy pellet
 		}
 	}
 }
@@ -230,8 +253,9 @@ func main() {
 			Cooldown: 15,
 		},
 		Enemies:  []Player{},
-		Wave:     4,
+		Wave:     1,
 		NextWave: false,
+		Lose:     false,
 	}
 	wave(game)
 
@@ -259,7 +283,7 @@ func wave(g *Game) {
 				PlayerX:  screenWidth - 10,
 				PlayerY:  float32(screenHeight-(i*(screenHeight/10))) + 10,
 				Speed:    (r1.Float32() / 2),
-				Cooldown: rand.Intn(100) + 100,
+				Cooldown: rand.Intn(300) + 100,
 			}
 			g.Enemies = append(g.Enemies, newEnemy)
 		}
@@ -271,11 +295,10 @@ func wave(g *Game) {
 				PlayerY:  float32(screenHeight - (i * r1.Intn(10))),
 				Speed:    (r1.Float32() / 2),
 				Velocity: float32(1 - 2*(rand.Intn(2))),
-				Cooldown: rand.Intn(100) + 100,
+				Cooldown: rand.Intn(300) + 100,
 			}
 			g.Enemies = append(g.Enemies, newEnemy)
 		}
-		g.NextWave = false
 	case 3:
 		for i := range 30 {
 			newEnemy := Player{
@@ -298,16 +321,28 @@ func wave(g *Game) {
 			}
 			g.Enemies = append(g.Enemies, newEnemy)
 		}
-		g.NextWave = false
 	case 4:
 		newEnemy := Player{
 			Health:   100,
 			PlayerX:  screenWidth - 50,
 			PlayerY:  screenHeight / 2,
-			Speed:    2,
-			Cooldown: rand.Intn(600) + 250,
+			Speed:    .5,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(250) + 250,
 		}
 		g.Enemies = append(g.Enemies, newEnemy)
-		g.NextWave = false
+	case 5:
+		g.Player.Health += 30
+		for i := range 10 {
+			newEnemy := Player{
+				Health:   20,
+				PlayerX:  screenWidth - 10,
+				PlayerY:  float32(screenHeight-(i*(screenHeight/10))) + 10,
+				Speed:    (r1.Float32() / 3),
+				Cooldown: rand.Intn(250) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+		}
 	}
+	g.NextWave = false
 }
