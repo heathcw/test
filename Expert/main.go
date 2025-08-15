@@ -123,7 +123,7 @@ func (g *Game) Update() error {
 			}
 			enemy.updateY(enemy.Velocity * enemy.Speed)
 			enemy.updateX(xVelocity * enemy.Speed)
-		} else if g.Wave == 8 {
+		} else if g.Wave == 8 || g.Wave == 9 || g.Wave == 10 || g.Wave == 11 || g.Wave == 12 {
 			if enemy.PlayerY < g.Player.PlayerY {
 				enemy.Velocity = 1.0
 				enemy.updateY(enemy.Velocity * enemy.Speed)
@@ -150,6 +150,14 @@ func (g *Game) Update() error {
 				VY: 0,
 			})
 			enemy.Cooldown = r1.Intn(250) + 250
+		} else if enemy.Cooldown == 0 && g.Wave == 12 {
+			g.Projectiles = append(g.Projectiles, Projectile{
+				X:  enemy.PlayerX - 8, // center of player
+				Y:  enemy.PlayerY + 4,
+				VX: -weaponSpeed, // pixels per frame
+				VY: 0,
+			})
+			enemy.Cooldown = r1.Intn(50) + 10
 		} else if enemy.Cooldown == 0 {
 			g.Projectiles = append(g.Projectiles, Projectile{
 				X:  enemy.PlayerX - 8, // center of player
@@ -255,6 +263,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	if g.Wave == 4 || g.Wave == 8 {
 		vector.DrawFilledRect(screen, g.Enemies[0].PlayerX, g.Enemies[0].PlayerY, 16, 16, color.RGBA{0, 0, 255, 255}, false)
 		vector.DrawFilledRect(screen, 10, screenHeight-10, float32(g.Enemies[0].Health), 3, color.RGBA{255, 0, 0, 255}, false)
+	} else if g.Wave == 12 {
+		vector.DrawFilledRect(screen, g.Enemies[0].PlayerX, g.Enemies[0].PlayerY, 7, 7, color.RGBA{0, 0, 255, 255}, false)
+		vector.DrawFilledRect(screen, 10, screenHeight-10, float32(g.Enemies[0].Health), 3, color.RGBA{255, 0, 0, 255}, false)
 	} else {
 		for _, e := range g.Enemies {
 			if e.Hurt {
@@ -303,7 +314,7 @@ func main() {
 			Cooldown: 15,
 		},
 		Enemies:  []Player{},
-		Wave:     1,
+		Wave:     12,
 		NextWave: false,
 		Lose:     false,
 	}

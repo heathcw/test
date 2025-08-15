@@ -126,6 +126,112 @@ func wave(g *Game) {
 			Cooldown: rand.Intn(50) + 50,
 		}
 		g.Enemies = append(g.Enemies, newEnemy)
+	case 9:
+		g.Player.Health += 30
+		newEnemy := Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight - 50,
+			Speed:    .75,
+			Velocity: g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  50,
+			Speed:    .5,
+			Velocity: -g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+	case 10:
+		newEnemy := Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight - 50,
+			Speed:    .75,
+			Velocity: g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  100,
+			Speed:    .5,
+			Velocity: -g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight - 100,
+			Speed:    .25,
+			Velocity: g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  50,
+			Speed:    1,
+			Velocity: -g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 50,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+	case 11:
+		for i := range 2 {
+			newEnemy := Player{
+				Health:   30,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  screenHeight - 50,
+				Speed:    r1.Float32(),
+				Velocity: g.Player.Velocity,
+				Cooldown: rand.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+			newEnemy = Player{
+				Health:   30,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  100,
+				Speed:    r1.Float32(),
+				Velocity: -g.Player.Velocity,
+				Cooldown: rand.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+			newEnemy = Player{
+				Health:   30,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  screenHeight - 100,
+				Speed:    r1.Float32(),
+				Velocity: g.Player.Velocity,
+				Cooldown: rand.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+			newEnemy = Player{
+				Health:   30,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  50,
+				Speed:    r1.Float32(),
+				Velocity: -g.Player.Velocity,
+				Cooldown: rand.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+		}
+	case 12:
+		newEnemy := Player{
+			Health:   300,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight / 2,
+			Speed:    .9,
+			Velocity: -g.Player.Velocity,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
 	}
 	g.NextWave = false
 }
