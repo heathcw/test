@@ -314,7 +314,7 @@ func main() {
 			Cooldown: 15,
 		},
 		Enemies:  []Player{},
-		Wave:     12,
+		Wave:     1,
 		NextWave: false,
 		Lose:     false,
 	}
