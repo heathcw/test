@@ -48,17 +48,17 @@ func (g *Game) Update() error {
 		g.Player.Hurt = false
 	}
 	// Input handling
-	if ebiten.IsKeyPressed(ebiten.KeyD) {
+	if ebiten.IsKeyPressed(ebiten.KeyD) && g.Player.PlayerX != screenWidth-playerSpeed {
 		g.Player.updateX(playerSpeed)
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyA) {
+	if ebiten.IsKeyPressed(ebiten.KeyA) && g.Player.PlayerX != playerSpeed {
 		g.Player.updateX(-playerSpeed)
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyS) {
+	if ebiten.IsKeyPressed(ebiten.KeyS) && g.Player.PlayerY != screenHeight-playerSpeed {
 		g.Player.updateY(playerSpeed)
 		g.Player.Velocity = 1.0
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyW) {
+	if ebiten.IsKeyPressed(ebiten.KeyW) && g.Player.PlayerY != playerSpeed {
 		g.Player.updateY(-playerSpeed)
 		g.Player.Velocity = -1.0
 	}
@@ -81,7 +81,7 @@ func (g *Game) Update() error {
 		//calculate movement
 		if g.Wave == 1 || g.Wave == 5 {
 			enemy.updateX(-enemy.Speed)
-		} else if g.Wave == 2 || g.Wave == 6 {
+		} else if g.Wave == 2 || g.Wave == 6 || g.Wave == 13 || g.Wave == 14 || g.Wave == 15 {
 			if enemy.PlayerY <= 10 {
 				enemy.Velocity = 1.0
 			}
@@ -158,6 +158,23 @@ func (g *Game) Update() error {
 				VY: 0,
 			})
 			enemy.Cooldown = r1.Intn(50) + 10
+		} else if enemy.Cooldown == 0 && g.Wave > 12 {
+			if enemy.Speed == 2 {
+				g.Projectiles = append(g.Projectiles, Projectile{
+					X:  enemy.PlayerX - 8, // center of player
+					Y:  enemy.PlayerY + 4,
+					VX: -weaponSpeed, // pixels per frame
+					VY: 0,
+				})
+			} else {
+				g.Projectiles = append(g.Projectiles, Projectile{
+					X:  enemy.PlayerX + 4, // center of player
+					Y:  enemy.PlayerY,
+					VX: 0,
+					VY: enemy.Velocity * weaponSpeed * 1.5,
+				})
+			}
+			enemy.Cooldown = r1.Intn(50) + 10
 		} else if enemy.Cooldown == 0 {
 			g.Projectiles = append(g.Projectiles, Projectile{
 				X:  enemy.PlayerX - 8, // center of player
@@ -195,6 +212,10 @@ func (g *Game) Update() error {
 			g.Player.Health -= 10
 			g.Player.Hurt = true
 			g.Projectiles[i] = Projectile{}
+		} else if isColliding(p.X, p.Y, 3, 3, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && p.VX == 0 && g.Wave >= 4 {
+			g.Player.Health -= 5
+			g.Player.Hurt = true
+			g.Projectiles[i] = Projectile{}
 		} else {
 			g.Projectiles[i].X += g.Projectiles[i].VX
 			g.Projectiles[i].Y += g.Projectiles[i].VY
@@ -204,7 +225,7 @@ func (g *Game) Update() error {
 	// (Optional) Remove off-screen projectiles
 	var newProjectiles []Projectile
 	for _, p := range g.Projectiles {
-		if p.X >= 0 && p.X <= screenWidth && p.Y >= 0 && p.Y <= screenHeight && p.VX != 0 {
+		if p.X >= 0 && p.X <= screenWidth && p.Y >= 0 && p.Y <= screenHeight /*&& p.VX != 0*/ {
 			newProjectiles = append(newProjectiles, p)
 		}
 	}
@@ -314,7 +335,7 @@ func main() {
 			Cooldown: 15,
 		},
 		Enemies:  []Player{},
-		Wave:     1,
+		Wave:     15,
 		NextWave: false,
 		Lose:     false,
 	}

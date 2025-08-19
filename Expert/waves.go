@@ -232,6 +232,147 @@ func wave(g *Game) {
 			Cooldown: rand.Intn(50) + 20,
 		}
 		g.Enemies = append(g.Enemies, newEnemy)
+	case 13:
+		g.Player.Health += 30
+		newEnemy := Player{
+			Health:   30,
+			PlayerX:  screenWidth / 2,
+			PlayerY:  screenHeight - 50,
+			Speed:    2,
+			Velocity: -1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth / 2,
+			PlayerY:  50,
+			Speed:    2,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+	case 14:
+		newEnemy := Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight - 50,
+			Speed:    2,
+			Velocity: -1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  50,
+			Speed:    2,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth / 2,
+			PlayerY:  screenHeight - 50,
+			Speed:    1.5,
+			Velocity: -1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth / 4,
+			PlayerY:  50,
+			Speed:    1.5,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+	case 15:
+		newEnemy := Player{
+			Health:   30,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight - 50,
+			Speed:    2,
+			Velocity: -1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth - 55,
+			PlayerY:  50,
+			Speed:    2,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth / 2,
+			PlayerY:  screenHeight - 50,
+			Speed:    2,
+			Velocity: -1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  screenWidth/2 + 5,
+			PlayerY:  50,
+			Speed:    2,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  110,
+			PlayerY:  50,
+			Speed:    1.5,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  90,
+			PlayerY:  screenHeight - 50,
+			Speed:    1.5,
+			Velocity: -1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  70,
+			PlayerY:  50,
+			Speed:    1.5,
+			Velocity: 1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   30,
+			PlayerX:  50,
+			PlayerY:  screenHeight - 50,
+			Speed:    1.5,
+			Velocity: -1.0,
+			Cooldown: rand.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
 	}
 	g.NextWave = false
 }
