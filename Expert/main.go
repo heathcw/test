@@ -73,7 +73,7 @@ func (g *Game) Update() error {
 		// Add a projectile moving to the right
 		g.Projectiles = append(g.Projectiles, Projectile{
 			X:  g.Player.PlayerX + 8, // center of player
-			Y:  g.Player.PlayerY + 8,
+			Y:  g.Player.PlayerY + 5,
 			VX: weaponSpeed, // pixels per frame
 			VY: 0,
 		})
