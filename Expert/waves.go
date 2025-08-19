@@ -373,6 +373,16 @@ func wave(g *Game) {
 			Cooldown: rand.Intn(50) + 20,
 		}
 		g.Enemies = append(g.Enemies, newEnemy)
+	case 16:
+		newEnemy := Player{
+			Health:   400,
+			PlayerX:  screenWidth,
+			PlayerY:  screenHeight / 2,
+			Speed:    .9,
+			Velocity: -g.Player.Velocity,
+			Cooldown: 30,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
 	}
 	g.NextWave = false
 }
