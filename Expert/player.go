@@ -25,3 +25,11 @@ type Projectile struct {
 	X, Y   float32
 	VX, VY float32 // velocity
 }
+
+type PowerUp struct {
+	X, Y   float32
+	VX, VY float32
+	Power  string
+	Got    bool
+	Draw   bool
+}

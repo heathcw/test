@@ -34,6 +34,7 @@ type Game struct {
 	Score       int
 	Lose        bool
 	Stars       []Projectile
+	Powerups    map[string]PowerUp
 }
 
 func (g *Game) Update() error {
@@ -77,13 +78,33 @@ func (g *Game) Update() error {
 			VX: weaponSpeed, // pixels per frame
 			VY: 0,
 		})
-		g.Player.Cooldown = 15
+
+		if g.Powerups["Spread"].Got {
+			g.Projectiles = append(g.Projectiles, Projectile{
+				X:  g.Player.PlayerX + 8, // center of player
+				Y:  g.Player.PlayerY - 5,
+				VX: weaponSpeed, // pixels per frame
+				VY: 0,
+			})
+			g.Projectiles = append(g.Projectiles, Projectile{
+				X:  g.Player.PlayerX + 8, // center of player
+				Y:  g.Player.PlayerY + 15,
+				VX: weaponSpeed, // pixels per frame
+				VY: 0,
+			})
+		}
+
+		if g.Powerups["Blast"].Got {
+			g.Player.Cooldown = 5
+		} else {
+			g.Player.Cooldown = 15
+		}
 	}
 
 	//update enemies
 	var newEnemies []Player
 	for _, enemy := range g.Enemies {
-		enemy.Hurt = false
+
 		//calculate movement
 		if g.Wave == 1 || g.Wave == 5 {
 			enemy.updateX(-enemy.Speed)
@@ -216,17 +237,38 @@ func (g *Game) Update() error {
 			enemy.Cooldown--
 		}
 
+		//enemy hurt cooldown
+		if enemy.Hurt {
+			enemy.HurtCooldown--
+		}
+		if enemy.HurtCooldown == 0 {
+			enemy.Hurt = false
+			enemy.HurtCooldown = 30
+		}
+
 		//calculate damage to enemies
 		for j, p := range g.Projectiles {
-			if isColliding(p.X, p.Y, 4, 4, enemy.PlayerX, enemy.PlayerY, 8, 8) && p.VX > 0 {
+			if g.Powerups["Big"].Got {
+				if isColliding(p.X, p.Y, 7, 7, enemy.PlayerX, enemy.PlayerY, 8, 8) && p.VX > 0 {
+					enemy.Health -= 10
+					enemy.Hurt = true
+					enemy.HurtCooldown = 30
+					g.Projectiles[j] = Projectile{}
+					g.Score += 100
+				}
+			} else if isColliding(p.X, p.Y, 4, 4, enemy.PlayerX, enemy.PlayerY, 8, 8) && p.VX > 0 {
 				enemy.Health -= 5
 				enemy.Hurt = true
+				enemy.HurtCooldown = 30
 				g.Projectiles[j] = Projectile{}
 				g.Score += 50
 			}
 		}
 		if enemy.Health > 0 && enemy.PlayerX > 0 {
 			newEnemies = append(newEnemies, enemy)
+		}
+		if enemy.PlayerX < 0 {
+			g.Player.Health -= 2
 		}
 	}
 	g.Enemies = newEnemies
@@ -259,6 +301,22 @@ func (g *Game) Update() error {
 		}
 	}
 	g.Projectiles = newProjectiles
+
+	//update powerups
+	for i, u := range g.Powerups {
+		newPowerUp := u
+		if g.Player.Hurt {
+			newPowerUp.Got = false
+		}
+		if isColliding(u.X, u.Y, 4, 4, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && !u.Got && u.Draw {
+			newPowerUp.Got = true
+			newPowerUp.Draw = false
+		} else {
+			newPowerUp.X += u.VX
+			newPowerUp.Y += u.VY
+		}
+		g.Powerups[i] = newPowerUp
+	}
 
 	//update wave
 	if len(g.Enemies) <= 0 {
@@ -299,7 +357,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	// Draw player as a white rectangle for now
 	if g.Player.Hurt {
-		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{255, 0, 0, 255}, false)
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{231, 193, 193, 255}, false)
 	} else {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.White, false)
 	}
@@ -319,7 +377,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	} else {
 		for _, e := range g.Enemies {
 			if e.Hurt {
-				vector.DrawFilledRect(screen, e.PlayerX, e.PlayerY, 7, 7, color.RGBA{0, 50, 255, 255}, false)
+				vector.DrawFilledRect(screen, e.PlayerX, e.PlayerY, 7, 7, color.RGBA{0, 0, 113, 255}, false)
 			} else {
 				vector.DrawFilledRect(screen, e.PlayerX, e.PlayerY, 7, 7, color.RGBA{0, 0, 255, 255}, false)
 			}
@@ -340,11 +398,22 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	//draw projectiles
 	for _, p := range g.Projectiles {
 		if p.VX > 0 {
-			vector.DrawFilledCircle(screen, p.X, p.Y, 3, color.RGBA{0, 255, 0, 255}, false) // green bullet
+			if g.Powerups["Big"].Got {
+				vector.DrawFilledCircle(screen, p.X, p.Y, 6, color.RGBA{0, 255, 0, 255}, false) // big green blast
+			} else {
+				vector.DrawFilledCircle(screen, p.X, p.Y, 3, color.RGBA{0, 255, 0, 255}, false) // green bullet
+			}
 		} else if p.VX == -1 || (g.Wave == 16 && p.VX < 0) {
 			vector.DrawFilledCircle(screen, p.X, p.Y, 5, color.RGBA{255, 0, 0, 255}, false) // big enemy blast
 		} else {
 			vector.DrawFilledCircle(screen, p.X, p.Y, 1, color.RGBA{255, 0, 0, 255}, false) // enemy pellet
+		}
+	}
+
+	//draw powerups
+	for _, u := range g.Powerups {
+		if u.Draw {
+			vector.DrawFilledCircle(screen, u.X, u.Y, 3, color.RGBA{245, 40, 145, 255}, false)
 		}
 	}
 }
@@ -365,9 +434,10 @@ func main() {
 			HurtCooldown: 30,
 		},
 		Enemies:  []Player{},
-		Wave:     16,
+		Wave:     1,
 		NextWave: false,
 		Lose:     false,
+		Powerups: make(map[string]PowerUp),
 	}
 	wave(game)
 

@@ -63,6 +63,18 @@ func wave(g *Game) {
 		g.Enemies = append(g.Enemies, newEnemy)
 	case 5:
 		g.Player.Health += 30
+
+		newPowerUp := PowerUp{
+			X:     screenWidth,
+			Y:     screenHeight / 2,
+			VX:    -.5,
+			VY:    0,
+			Power: "Blast",
+			Got:   false,
+			Draw:  true,
+		}
+		g.Powerups["Blast"] = newPowerUp
+
 		for i := range 10 {
 			newEnemy := Player{
 				Health:   20,
@@ -128,6 +140,18 @@ func wave(g *Game) {
 		g.Enemies = append(g.Enemies, newEnemy)
 	case 9:
 		g.Player.Health += 30
+
+		newPowerUp := PowerUp{
+			X:     screenWidth,
+			Y:     screenHeight / 2,
+			VX:    -.5,
+			VY:    0,
+			Power: "Spread",
+			Got:   false,
+			Draw:  true,
+		}
+		g.Powerups["Spread"] = newPowerUp
+
 		newEnemy := Player{
 			Health:   30,
 			PlayerX:  screenWidth - 50,
@@ -233,6 +257,17 @@ func wave(g *Game) {
 		}
 		g.Enemies = append(g.Enemies, newEnemy)
 	case 13:
+		newPowerUp := PowerUp{
+			X:     screenWidth,
+			Y:     screenHeight / 2,
+			VX:    -1,
+			VY:    0,
+			Power: "Big",
+			Got:   false,
+			Draw:  true,
+		}
+		g.Powerups["Big"] = newPowerUp
+
 		g.Player.Health += 30
 		newEnemy := Player{
 			Health:   30,
