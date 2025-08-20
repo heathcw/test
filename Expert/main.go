@@ -54,19 +54,24 @@ func (g *Game) Update() error {
 		g.Player.Hurt = false
 		g.Player.HurtCooldown = 30
 	}
+
+	var move float32 = playerSpeed
+	if g.Powerups["Speed"].Got || g.Powerups["Super"].Got {
+		move = playerSpeed * 2.0
+	}
 	// Input handling
-	if ebiten.IsKeyPressed(ebiten.KeyD) && g.Player.PlayerX != screenWidth-playerSpeed {
-		g.Player.updateX(playerSpeed)
+	if ebiten.IsKeyPressed(ebiten.KeyD) && g.Player.PlayerX < screenWidth-playerSpeed {
+		g.Player.updateX(move)
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyA) && g.Player.PlayerX != playerSpeed {
-		g.Player.updateX(-playerSpeed)
+	if ebiten.IsKeyPressed(ebiten.KeyA) && g.Player.PlayerX > playerSpeed {
+		g.Player.updateX(-move)
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyS) && g.Player.PlayerY != screenHeight-playerSpeed {
-		g.Player.updateY(playerSpeed)
+	if ebiten.IsKeyPressed(ebiten.KeyS) && g.Player.PlayerY < screenHeight-playerSpeed {
+		g.Player.updateY(move)
 		g.Player.Velocity = 1.0
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyW) && g.Player.PlayerY != playerSpeed {
-		g.Player.updateY(-playerSpeed)
+	if ebiten.IsKeyPressed(ebiten.KeyW) && g.Player.PlayerY > playerSpeed {
+		g.Player.updateY(-move)
 		g.Player.Velocity = -1.0
 	}
 	// Shoot (spacebar)
@@ -79,22 +84,22 @@ func (g *Game) Update() error {
 			VY: 0,
 		})
 
-		if g.Powerups["Spread"].Got {
+		if g.Powerups["Spread"].Got || g.Powerups["Super"].Got {
 			g.Projectiles = append(g.Projectiles, Projectile{
 				X:  g.Player.PlayerX + 8, // center of player
-				Y:  g.Player.PlayerY - 5,
+				Y:  g.Player.PlayerY - 10,
 				VX: weaponSpeed, // pixels per frame
 				VY: 0,
 			})
 			g.Projectiles = append(g.Projectiles, Projectile{
 				X:  g.Player.PlayerX + 8, // center of player
-				Y:  g.Player.PlayerY + 15,
+				Y:  g.Player.PlayerY + 20,
 				VX: weaponSpeed, // pixels per frame
 				VY: 0,
 			})
 		}
 
-		if g.Powerups["Blast"].Got {
+		if g.Powerups["Blast"].Got || g.Powerups["Super"].Got {
 			g.Player.Cooldown = 5
 		} else {
 			g.Player.Cooldown = 15
@@ -173,6 +178,14 @@ func (g *Game) Update() error {
 				enemy.Velocity = -1.0
 				enemy.updateX(enemy.Velocity * enemy.Speed)
 			}
+		} else if g.Wave == 20 {
+			if enemy.PlayerY <= 100 {
+				enemy.Velocity = 1.0
+			}
+			if enemy.PlayerY >= screenHeight-100 {
+				enemy.Velocity = -1.0
+			}
+			enemy.updateY(enemy.Velocity * enemy.Speed)
 		}
 
 		//shoot projectile
@@ -225,6 +238,24 @@ func (g *Game) Update() error {
 				VY: 0,
 			})
 			enemy.Cooldown = 30
+		} else if enemy.Cooldown == 0 && g.Wave == 20 {
+			if enemy.Speed == 0 {
+				g.Projectiles = append(g.Projectiles, Projectile{
+					X:  enemy.PlayerX + 1, // center of player
+					Y:  enemy.PlayerY + 1,
+					VX: -2 * r1.Float32(), // pixels per frame
+					VY: .25 * g.Player.Velocity,
+				})
+				enemy.Cooldown = r1.Intn(50) + 25
+			} else {
+				g.Projectiles = append(g.Projectiles, Projectile{
+					X:  enemy.PlayerX - 8, // center of player
+					Y:  enemy.PlayerY + 15,
+					VX: -1, // pixels per frame
+					VY: 0,
+				})
+				enemy.Cooldown = r1.Intn(50) + 100
+			}
 		} else if enemy.Cooldown == 0 {
 			g.Projectiles = append(g.Projectiles, Projectile{
 				X:  enemy.PlayerX - 8, // center of player
@@ -248,21 +279,56 @@ func (g *Game) Update() error {
 
 		//calculate damage to enemies
 		for j, p := range g.Projectiles {
-			if g.Powerups["Big"].Got {
-				if isColliding(p.X, p.Y, 7, 7, enemy.PlayerX, enemy.PlayerY, 8, 8) && p.VX > 0 {
-					enemy.Health -= 10
+			if g.Wave == 20 {
+				if g.Powerups["Big"].Got || g.Powerups["Super"].Got {
+					if isColliding(p.X, p.Y, 7, 7, enemy.PlayerX, enemy.PlayerY, 30, 30) && p.VX > 0 && enemy.Speed != 0 {
+						enemy.Health -= 10
+						enemy.Hurt = true
+						enemy.HurtCooldown = 30
+						g.Projectiles[j] = Projectile{}
+						g.Score += 100
+					}
+				} else if isColliding(p.X, p.Y, 4, 4, enemy.PlayerX, enemy.PlayerY, 30, 30) && p.VX > 0 && enemy.Speed != 0 {
+					enemy.Health -= 5
 					enemy.Hurt = true
 					enemy.HurtCooldown = 30
 					g.Projectiles[j] = Projectile{}
-					g.Score += 100
+					g.Score += 50
 				}
-			} else if isColliding(p.X, p.Y, 4, 4, enemy.PlayerX, enemy.PlayerY, 8, 8) && p.VX > 0 {
-				enemy.Health -= 5
-				enemy.Hurt = true
-				enemy.HurtCooldown = 30
-				g.Projectiles[j] = Projectile{}
-				g.Score += 50
+			} else if g.Wave == 4 || g.Wave == 8 {
+				if g.Powerups["Big"].Got || g.Powerups["Super"].Got {
+					if isColliding(p.X, p.Y, 7, 7, enemy.PlayerX, enemy.PlayerY, 10, 10) && p.VX > 0 && enemy.Speed != 0 {
+						enemy.Health -= 10
+						enemy.Hurt = true
+						enemy.HurtCooldown = 30
+						g.Projectiles[j] = Projectile{}
+						g.Score += 100
+					}
+				} else if isColliding(p.X, p.Y, 4, 4, enemy.PlayerX, enemy.PlayerY, 10, 10) && p.VX > 0 && enemy.Speed != 0 {
+					enemy.Health -= 5
+					enemy.Hurt = true
+					enemy.HurtCooldown = 30
+					g.Projectiles[j] = Projectile{}
+					g.Score += 50
+				}
+			} else {
+				if g.Powerups["Big"].Got || g.Powerups["Super"].Got {
+					if isColliding(p.X, p.Y, 7, 7, enemy.PlayerX, enemy.PlayerY, 8, 8) && p.VX > 0 && enemy.Speed != 0 {
+						enemy.Health -= 10
+						enemy.Hurt = true
+						enemy.HurtCooldown = 30
+						g.Projectiles[j] = Projectile{}
+						g.Score += 100
+					}
+				} else if isColliding(p.X, p.Y, 4, 4, enemy.PlayerX, enemy.PlayerY, 8, 8) && p.VX > 0 && enemy.Speed != 0 {
+					enemy.Health -= 5
+					enemy.Hurt = true
+					enemy.HurtCooldown = 30
+					g.Projectiles[j] = Projectile{}
+					g.Score += 50
+				}
 			}
+
 		}
 		if enemy.Health > 0 && enemy.PlayerX > 0 {
 			newEnemies = append(newEnemies, enemy)
@@ -280,11 +346,23 @@ func (g *Game) Update() error {
 			g.Player.Hurt = true
 			g.Projectiles[i] = Projectile{}
 		} else if isColliding(p.X, p.Y, 4, 4, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && p.VX < 0 && g.Wave >= 4 && !g.Player.Hurt {
-			g.Player.Health -= 10
+			if g.Powerups["Super"].Got {
+				g.Player.Health -= 3
+			} else {
+				g.Player.Health -= 7
+			}
 			g.Player.Hurt = true
 			g.Projectiles[i] = Projectile{}
 		} else if isColliding(p.X, p.Y, 3, 3, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && p.VX == 0 && g.Wave >= 4 && !g.Player.Hurt {
 			g.Player.Health -= 5
+			g.Player.Hurt = true
+			g.Projectiles[i] = Projectile{}
+		} else if isColliding(p.X-5, p.Y-7, 14, 14, g.Player.PlayerX, g.Player.PlayerY, 8, 8) && p.VX == -1 && g.Wave == 20 && !g.Player.Hurt {
+			if g.Powerups["Super"].Got {
+				g.Player.Health -= 8
+			} else {
+				g.Player.Health -= 15
+			}
 			g.Player.Hurt = true
 			g.Projectiles[i] = Projectile{}
 		} else {
@@ -374,6 +452,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	} else if g.Wave == 12 || g.Wave == 16 {
 		vector.DrawFilledRect(screen, g.Enemies[0].PlayerX, g.Enemies[0].PlayerY, 7, 7, color.RGBA{0, 0, 255, 255}, false)
 		vector.DrawFilledRect(screen, 10, screenHeight-10, float32(g.Enemies[0].Health/2), 3, color.RGBA{255, 0, 0, 255}, false)
+	} else if g.Wave == 20 {
+		vector.DrawFilledRect(screen, g.Enemies[0].PlayerX, g.Enemies[0].PlayerY, 32, 32, color.RGBA{0, 0, 255, 255}, false)
+		vector.DrawFilledRect(screen, 10, screenHeight-10, float32(g.Enemies[0].Health/16), 3, color.RGBA{255, 0, 0, 255}, false)
 	} else {
 		for _, e := range g.Enemies {
 			if e.Hurt {
@@ -398,15 +479,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	//draw projectiles
 	for _, p := range g.Projectiles {
 		if p.VX > 0 {
-			if g.Powerups["Big"].Got {
+			if g.Powerups["Big"].Got || g.Powerups["Super"].Got {
 				vector.DrawFilledCircle(screen, p.X, p.Y, 6, color.RGBA{0, 255, 0, 255}, false) // big green blast
 			} else {
 				vector.DrawFilledCircle(screen, p.X, p.Y, 3, color.RGBA{0, 255, 0, 255}, false) // green bullet
 			}
-		} else if p.VX == -1 || (g.Wave == 16 && p.VX < 0) {
+		} else if g.Wave == 20 && p.VX == -1 {
+			vector.DrawFilledCircle(screen, p.X, p.Y, 10, color.RGBA{255, 0, 0, 255}, false) // ultra enemy blast
+		} else if p.VX == -1 || (g.Wave == 16 && p.VX < 0) || (g.Wave == 20 && p.VX < 0) {
 			vector.DrawFilledCircle(screen, p.X, p.Y, 5, color.RGBA{255, 0, 0, 255}, false) // big enemy blast
 		} else {
-			vector.DrawFilledCircle(screen, p.X, p.Y, 1, color.RGBA{255, 0, 0, 255}, false) // enemy pellet
+			vector.DrawFilledCircle(screen, p.X, p.Y, 2, color.RGBA{255, 0, 0, 255}, false) // enemy pellet
 		}
 	}
 
@@ -434,7 +517,7 @@ func main() {
 			HurtCooldown: 30,
 		},
 		Enemies:  []Player{},
-		Wave:     1,
+		Wave:     20,
 		NextWave: false,
 		Lose:     false,
 		Powerups: make(map[string]PowerUp),
