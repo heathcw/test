@@ -415,8 +415,147 @@ func wave(g *Game) {
 		}
 		g.Enemies = append(g.Enemies, newEnemy)
 	case 17:
+		g.Player.Health += 30
+		newPowerUp := PowerUp{
+			X:     0,
+			Y:     screenHeight / 2,
+			VX:    1,
+			VY:    0,
+			Power: "Speed",
+			Got:   false,
+			Draw:  true,
+		}
+		g.Powerups["Speed"] = newPowerUp
+		for i := range 5 {
+			newEnemy := Player{
+				Health:   100,
+				PlayerX:  float32(screenWidth - r1.Intn(150) - 50),
+				PlayerY:  float32(20 + i*((screenHeight-40)/4)),
+				Speed:    .5,
+				Velocity: float32(1 - 2*(r1.Intn(2))),
+				Cooldown: r1.Intn(250) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+		}
 	case 18:
+		for i := range 2 {
+			newEnemy := Player{
+				Health:   100,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  screenHeight - 50,
+				Speed:    r1.Float32() * .5,
+				Velocity: g.Player.Velocity,
+				Cooldown: r1.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+			newEnemy = Player{
+				Health:   100,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  100,
+				Speed:    r1.Float32() * .5,
+				Velocity: -g.Player.Velocity,
+				Cooldown: r1.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+			newEnemy = Player{
+				Health:   100,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  screenHeight - 100,
+				Speed:    r1.Float32() * .5,
+				Velocity: g.Player.Velocity,
+				Cooldown: r1.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+			newEnemy = Player{
+				Health:   100,
+				PlayerX:  float32(screenWidth - (50 * (i + 1))),
+				PlayerY:  50,
+				Speed:    r1.Float32() * .5,
+				Velocity: -g.Player.Velocity,
+				Cooldown: r1.Intn(50) + 50,
+			}
+			g.Enemies = append(g.Enemies, newEnemy)
+		}
 	case 19:
+		newEnemy := Player{
+			Health:   100,
+			PlayerX:  screenWidth - 50,
+			PlayerY:  screenHeight - 50,
+			Speed:    2,
+			Velocity: -1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   100,
+			PlayerX:  screenWidth - 55,
+			PlayerY:  50,
+			Speed:    2,
+			Velocity: 1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   100,
+			PlayerX:  screenWidth / 2,
+			PlayerY:  screenHeight - 50,
+			Speed:    2,
+			Velocity: -1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   100,
+			PlayerX:  screenWidth/2 + 5,
+			PlayerY:  50,
+			Speed:    2,
+			Velocity: 1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   100,
+			PlayerX:  110,
+			PlayerY:  50,
+			Speed:    1.5,
+			Velocity: 1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   100,
+			PlayerX:  90,
+			PlayerY:  screenHeight - 50,
+			Speed:    1.5,
+			Velocity: -1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   100,
+			PlayerX:  70,
+			PlayerY:  50,
+			Speed:    1.5,
+			Velocity: 1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
+
+		newEnemy = Player{
+			Health:   100,
+			PlayerX:  50,
+			PlayerY:  screenHeight - 50,
+			Speed:    1.5,
+			Velocity: -1.0,
+			Cooldown: r1.Intn(50) + 20,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
 	case 20:
 		newPowerUp := PowerUp{
 			X:     0,
