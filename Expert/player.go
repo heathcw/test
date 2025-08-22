@@ -33,3 +33,8 @@ type PowerUp struct {
 	Got    bool
 	Draw   bool
 }
+
+type Timer struct {
+	Time     int
+	Cooldown int
+}

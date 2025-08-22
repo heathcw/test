@@ -34,12 +34,13 @@ type Game struct {
 	Score       int
 	Lose        bool
 	Win         bool
+	Timer       Timer
 	Stars       []Projectile
 	Powerups    map[string]PowerUp
 }
 
 func (g *Game) Update() error {
-	if g.Player.Health <= 0 {
+	if g.Player.Health <= 0 || g.Timer.Time == 0 {
 		g.Lose = true
 		return nil
 	}
@@ -57,6 +58,13 @@ func (g *Game) Update() error {
 	if g.Player.HurtCooldown == 0 {
 		g.Player.Hurt = false
 		g.Player.HurtCooldown = 30
+	}
+
+	if g.Timer.Cooldown > 0 {
+		g.Timer.Cooldown--
+	} else {
+		g.Timer.Time--
+		g.Timer.Cooldown = 60
 	}
 
 	handleInputs(g)
@@ -176,7 +184,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	message := "SCORE: " + strconv.Itoa(g.Score)
 	text.Draw(screen, message, basicfont.Face7x13, screenWidth-100, 10, color.White)
 	message = "WAVE: " + strconv.Itoa(g.Wave)
-	text.Draw(screen, message, basicfont.Face7x13, screenWidth-100, screenHeight-10, color.White)
+	text.Draw(screen, message, basicfont.Face7x13, screenWidth-75, screenHeight-10, color.White)
+	message = "TIME: " + strconv.Itoa(g.Timer.Time)
+	text.Draw(screen, message, basicfont.Face7x13, screenWidth-175, 10, color.White)
 	if g.Lose {
 		message = "GAME OVER"
 		text.Draw(screen, message, basicfont.Face7x13, screenWidth/2-25, screenHeight/2, color.White)
@@ -233,6 +243,7 @@ func main() {
 		NextWave: false,
 		Lose:     false,
 		Win:      false,
+		Timer:    Timer{Time: 600, Cooldown: 60},
 		Powerups: make(map[string]PowerUp),
 	}
 	wave(game)
