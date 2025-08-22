@@ -61,15 +61,15 @@ func wave(g *Game) {
 		g.Player.Health += 30
 
 		newPowerUp := PowerUp{
-			X:     screenWidth,
+			X:     0,
 			Y:     screenHeight / 2,
-			VX:    -.5,
+			VX:    .5,
 			VY:    0,
-			Power: "Big",
+			Power: "Speed",
 			Got:   false,
 			Draw:  true,
 		}
-		g.Powerups["Big"] = newPowerUp
+		g.Powerups["Speed"] = newPowerUp
 
 		for i := range 10 {
 			newEnemy := Player{
@@ -138,15 +138,15 @@ func wave(g *Game) {
 		g.Player.Health += 30
 
 		newPowerUp := PowerUp{
-			X:     screenWidth,
+			X:     0,
 			Y:     screenHeight / 2,
-			VX:    -.5,
+			VX:    .5,
 			VY:    0,
-			Power: "Spread",
+			Power: "Big",
 			Got:   false,
 			Draw:  true,
 		}
-		g.Powerups["Spread"] = newPowerUp
+		g.Powerups["Big"] = newPowerUp
 
 		newEnemy := Player{
 			Health:   30,
@@ -254,15 +254,15 @@ func wave(g *Game) {
 		g.Enemies = append(g.Enemies, newEnemy)
 	case 13:
 		newPowerUp := PowerUp{
-			X:     screenWidth,
+			X:     0,
 			Y:     screenHeight / 2,
-			VX:    -1,
+			VX:    .5,
 			VY:    0,
-			Power: "Blast",
+			Power: "Spread",
 			Got:   false,
 			Draw:  true,
 		}
-		g.Powerups["Blast"] = newPowerUp
+		g.Powerups["Spread"] = newPowerUp
 
 		g.Player.Health += 30
 		newEnemy := Player{
@@ -419,13 +419,13 @@ func wave(g *Game) {
 		newPowerUp := PowerUp{
 			X:     0,
 			Y:     screenHeight / 2,
-			VX:    1,
+			VX:    .5,
 			VY:    0,
-			Power: "Speed",
+			Power: "Blast",
 			Got:   false,
 			Draw:  true,
 		}
-		g.Powerups["Speed"] = newPowerUp
+		g.Powerups["Blast"] = newPowerUp
 		for i := range 5 {
 			newEnemy := Player{
 				Health:   100,

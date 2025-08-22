@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"image/color"
 	"log"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
@@ -128,6 +130,12 @@ func (g *Game) Update() error {
 	}
 	g.Stars = newStars
 
+	if g.Win {
+		g.Score += (g.Timer.Time * 10)
+		g.Score += (g.Player.Health * 10)
+		highScore(g.Score)
+	}
+
 	return nil
 }
 
@@ -143,6 +151,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Draw player as a white rectangle for now
 	if g.Player.Hurt {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{231, 193, 193, 255}, false)
+	} else if g.Powerups["Super"].Got {
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{0, 245, 253, 255}, false)
+	} else if g.Powerups["Blast"].Got {
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{0, 255, 0, 255}, false)
+	} else if g.Powerups["Spread"].Got {
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{253, 0, 0, 255}, false)
+	} else if g.Powerups["Big"].Got {
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{155, 0, 253, 255}, false)
+	} else if g.Powerups["Speed"].Got {
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{253, 203, 0, 255}, false)
 	} else {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.White, false)
 	}
@@ -618,4 +636,50 @@ func updateProjectiles(g *Game) {
 		}
 	}
 	g.Projectiles = newProjectiles
+}
+
+func highScore(score int) {
+	data, err := os.ReadFile("highscore.json")
+	if err != nil {
+		log.Fatalf("error reading file: %v", err)
+	}
+
+	var highScores map[string]HighScore
+
+	if err := json.Unmarshal(data, &highScores); err != nil {
+		log.Fatalf("error unmarshaling: %v", err)
+	}
+
+	if score > highScores["1"].Score {
+		newScore := HighScore{
+			Score: score,
+			Name:  "Heath",
+		}
+		highScores["3"] = highScores["2"]
+		highScores["2"] = highScores["1"]
+		highScores["1"] = newScore
+	} else if score > highScores["2"].Score {
+		newScore := HighScore{
+			Score: score,
+			Name:  "Heath",
+		}
+		highScores["3"] = highScores["2"]
+		highScores["2"] = newScore
+	} else if score > highScores["3"].Score {
+		newScore := HighScore{
+			Score: score,
+			Name:  "Heath",
+		}
+		highScores["3"] = newScore
+	}
+
+	data, err = json.Marshal(highScores)
+	if err != nil {
+		log.Fatalf("error marshaling JSON: %v", err)
+	}
+
+	err = os.WriteFile("highscore.json", data, 0644)
+	if err != nil {
+		log.Fatalf("error writing to file: %v", err)
+	}
 }

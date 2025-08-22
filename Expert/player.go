@@ -38,3 +38,8 @@ type Timer struct {
 	Time     int
 	Cooldown int
 }
+
+type HighScore struct {
+	Score int    `json:"score"`
+	Name  string `json:"name"`
+}
