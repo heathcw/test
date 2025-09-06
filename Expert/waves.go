@@ -560,7 +560,7 @@ func wave(g *Game) {
 		newPowerUp := PowerUp{
 			X:     0,
 			Y:     screenHeight / 2,
-			VX:    1,
+			VX:    0.5,
 			VY:    0,
 			Power: "Super",
 			Got:   false,

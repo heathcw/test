@@ -15,6 +15,7 @@ import (
 	//"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/font/basicfont"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 const (
@@ -22,10 +23,13 @@ const (
 	screenHeight = 240
 	playerSpeed  = 1
 	weaponSpeed  = 2
+	sampleRate = 44100
 )
 
 var s1 = rand.NewSource(time.Now().UnixNano())
 var r1 = rand.New(s1)
+var audioContext = audio.NewContext(sampleRate)
+var shoot, _ = loadWav("shoot.wav")
 
 type Game struct {
 	Player      Player
@@ -152,15 +156,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	if g.Player.Hurt {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{231, 193, 193, 255}, false)
 	} else if g.Powerups["Super"].Got {
-		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{0, 245, 253, 255}, false)
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{253, 203, 0, 255}, false)
 	} else if g.Powerups["Blast"].Got {
-		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{0, 255, 0, 255}, false)
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{155, 0, 253, 255}, false)
 	} else if g.Powerups["Spread"].Got {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{253, 0, 0, 255}, false)
 	} else if g.Powerups["Big"].Got {
-		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{155, 0, 253, 255}, false)
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{0, 255, 0, 255}, false)
 	} else if g.Powerups["Speed"].Got {
-		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{253, 203, 0, 255}, false)
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8,color.RGBA{0, 245, 253, 255}, false)
 	} else {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.White, false)
 	}
@@ -339,6 +343,10 @@ func handleInputs(g *Game) {
 			g.Player.Cooldown = 5
 		} else {
 			g.Player.Cooldown = 15
+		}
+
+		if shoot != nil {
+			shoot.Play()
 		}
 	}
 }
