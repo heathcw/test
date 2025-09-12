@@ -13,9 +13,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text"
 
 	//"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/audio"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/font/basicfont"
-	"github.com/hajimehoshi/ebiten/v2/audio"
 )
 
 const (
@@ -23,7 +23,7 @@ const (
 	screenHeight = 240
 	playerSpeed  = 1
 	weaponSpeed  = 2
-	sampleRate = 44100
+	sampleRate   = 44100
 )
 
 var s1 = rand.NewSource(time.Now().UnixNano())
@@ -46,6 +46,12 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+	if g.Wave == 0 {
+		if ebiten.IsKeyPressed(ebiten.KeySpace) {
+			g.Enemies = []Player{}
+		}
+	}
+
 	if g.Player.Health <= 0 || g.Timer.Time == 0 {
 		g.Lose = true
 		return nil
@@ -152,6 +158,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	}
 
+	if g.Wave == 0 {
+		message := "Astro Aggrivation"
+		text.Draw(screen, message, basicfont.Face7x13, screenWidth/2-55, screenHeight/2, color.White)
+
+		message = "Press Space to Start"
+		text.Draw(screen, message, basicfont.Face7x13, screenWidth/2-65, screenHeight/2+20, color.White)
+		return
+	}
+
 	// Draw player as a white rectangle for now
 	if g.Player.Hurt {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{231, 193, 193, 255}, false)
@@ -164,7 +179,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	} else if g.Powerups["Big"].Got {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{0, 255, 0, 255}, false)
 	} else if g.Powerups["Speed"].Got {
-		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8,color.RGBA{0, 245, 253, 255}, false)
+		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.RGBA{0, 245, 253, 255}, false)
 	} else {
 		vector.DrawFilledRect(screen, float32(g.Player.PlayerX), float32(g.Player.PlayerY), 8, 8, color.White, false)
 	}
@@ -261,7 +276,7 @@ func main() {
 			HurtCooldown: 30,
 		},
 		Enemies:  []Player{},
-		Wave:     1,
+		Wave:     0,
 		NextWave: false,
 		Lose:     false,
 		Win:      false,

@@ -2,6 +2,15 @@ package main
 
 func wave(g *Game) {
 	switch g.Wave {
+	case 0:
+		newEnemy := Player{
+			Health:   10,
+			PlayerX:  screenWidth - 10,
+			PlayerY:  screenHeight,
+			Speed:    0,
+			Cooldown: r1.Intn(300) + 100,
+		}
+		g.Enemies = append(g.Enemies, newEnemy)
 	case 1:
 		for i := range 10 {
 			newEnemy := Player{
