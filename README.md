@@ -1,0 +1,1 @@
+This repository contains some basic go challenges that I did. The Expert folder contains a space shooter game. You can run any program by navigating to that folder and typing go run . or go run main in the terminal.
